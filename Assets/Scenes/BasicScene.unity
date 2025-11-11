@@ -362,8 +362,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ContextSubtitle
   playerCamera: {fileID: 950071268}
-  speaker: {fileID: 0}
-  subtitleText: {fileID: 0}
+  speaker: {fileID: 1911297337}
+  subtitleText: {fileID: 1532607339}
   verticalOffset: 1.4
   worldOffset: {x: 0, y: 0, z: 0}
   maxDistance: 8
@@ -956,6 +956,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 18ddb545287c546e19cc77dc9fbb2189, type: 3}
+--- !u!4 &1911297337 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1438546959266459337, guid: 60770bdb4dc667c45bea53db0339dc05, type: 3}
+  m_PrefabInstance: {fileID: 1447996976}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2092139007
 GameObject:
   m_ObjectHideFlags: 0
