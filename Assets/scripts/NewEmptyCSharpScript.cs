@@ -22,19 +22,31 @@ public class ContextSubtitle : MonoBehaviour
     [TextArea]
     public string demoLine = "Hello! Welcome to our VR world.";
 
+    // --- New Section for Multiple Lines ---
+    public string[] lines = {
+        "Hello! Welcome to our VR world.",
+        "We have a lot of things to see today.",
+        "Follow me when you're ready."
+    };
+
+    int lineIndex = 0;
     CanvasGroup cg;
 
     void Awake()
     {
         cg = GetComponent<CanvasGroup>();
         if (!cg) cg = gameObject.AddComponent<CanvasGroup>();
-        if (subtitleText != null && !string.IsNullOrEmpty(demoLine))
-            subtitleText.text = demoLine;
 
-        if (headMountedCanvas != null && headMountedText != null)
-            headMountedText.text = demoLine;
-        
-        // Ensure world-space
+        if (subtitleText != null && lines.Length > 0)
+            SetSubtitle(lines[0]);
+
+        // Auto-find camera if not assigned
+        if (playerCamera == null)
+        {
+            var cam = Camera.main;
+            if (cam != null) playerCamera = cam.transform;
+        }
+
         var canvas = GetComponent<Canvas>();
         if (canvas) canvas.renderMode = RenderMode.WorldSpace;
     }
@@ -43,37 +55,41 @@ public class ContextSubtitle : MonoBehaviour
     {
         if (playerCamera == null || speaker == null) return;
 
-        // 1) Position above speaker + optional offset
+        // Position above the speaker
         Vector3 targetPos = speaker.position + Vector3.up * verticalOffset + worldOffset;
         transform.position = targetPos;
 
-        // 2) Billboard: face the camera (without pitch/roll if preferred)
-        Vector3 toCam = (playerCamera.position - transform.position).normalized;
-        toCam.y = 0f; // keep upright; comment this out to face fully
-        if (toCam.sqrMagnitude > 0.0001f)
-            transform.rotation = Quaternion.LookRotation(toCam);
+        // Make canvas face the player camera correctly
+        Vector3 forward = (transform.position - playerCamera.position).normalized;
+        forward.y = 0f; // keep upright
+        transform.rotation = Quaternion.LookRotation(forward);
 
-        // 3) Optional: fade if too far
+        // Optional: fade with distance
         if (cg != null && maxDistance > 0f)
         {
             float d = Vector3.Distance(playerCamera.position, speaker.position);
             cg.alpha = Mathf.Clamp01(1f - Mathf.InverseLerp(maxDistance * 0.6f, maxDistance, d));
         }
+    }
 
-        // 4) Fallback caption when user looks away
-        if (headMountedCanvas != null && headMountedText != null)
+    // --- Switch subtitles manually with keyboard ---
+    void Update()
+    {
+        // Press SPACE to go to the next subtitle
+        if (Input.GetKeyDown(KeyCode.Space))
         {
-            Vector3 toSpeaker = (speaker.position - playerCamera.position).normalized;
-            float dot = Vector3.Dot(playerCamera.forward, toSpeaker);
-            bool facingAway = dot < showFallbackWhenDotBelow;
-            headMountedCanvas.enabled = facingAway;
+            lineIndex = (lineIndex + 1) % lines.Length;
+            SetSubtitle(lines[lineIndex]);
         }
     }
 
-    // Helper to set text at runtime
+    // --- Function to update subtitle text ---
     public void SetSubtitle(string line)
     {
-        if (subtitleText != null) subtitleText.text = line;
-        if (headMountedText != null) headMountedText.text = line;
+        if (subtitleText != null)
+            subtitleText.text = line;
+
+        if (headMountedText != null)
+            headMountedText.text = line;
     }
 }
